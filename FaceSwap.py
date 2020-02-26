@@ -14,8 +14,10 @@ detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 
 
-img = cv2.imread("bradley_cooper.jpg")
+img = cv2.imread("aditya.jpg")
 gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+mask = np.zeros_like(gray)
+
 faces = detector(gray)
 for face in faces:
     landmark_points = []
@@ -31,14 +33,22 @@ for face in faces:
         x = landmarks.part(n).x
         y = landmarks.part(n).y
         landmark_points.append((x,y))
-        cv2.circle(img,(x,y),3,(0,0,255),-1)
+        #cv2.circle(img,(x,y),3,(0,0,255),-1)
 
 
     points = np.array(landmark_points,np.int32)
 
-    hull = cv2.convexHull(landmark_points)
+    convexhull = cv2.convexHull(points)
+
+    #cv2.polylines(img,[convexhull],True,(0,255,0),2)
+
+    cv2.fillConvexPoly(mask,convexhull,255)
+
+    face_image_1 = cv2.bitwise_and(img,img,mask = mask)
 
 cv2.imshow("frame",img)
+cv2.imshow("face_image",face_image_1)
+
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 

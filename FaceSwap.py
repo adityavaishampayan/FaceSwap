@@ -33,21 +33,27 @@ for face in faces:
         x = landmarks.part(n).x
         y = landmarks.part(n).y
         landmark_points.append((x,y))
-        #cv2.circle(img,(x,y),3,(0,0,255),-1)
-
+        cv2.circle(img,(x,y),3,(0,0,255),-1)
+        cv2.imshow("facial landmarks",img)
+        cv2.imwrite('facial_landmarks.png',img)
 
     points = np.array(landmark_points,np.int32)
 
     convexhull = cv2.convexHull(points)
 
-    #cv2.polylines(img,[convexhull],True,(0,255,0),2)
+    cv2.polylines(img,[convexhull],True,(0,255,0),2)
 
     cv2.fillConvexPoly(mask,convexhull,255)
+
 
     face_image_1 = cv2.bitwise_and(img,img,mask = mask)
 
 cv2.imshow("frame",img)
+cv2.imwrite('frame.png',img)
+
 cv2.imshow("face_image",face_image_1)
+cv2.imwrite('face_image.png',face_image_1)
+
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()

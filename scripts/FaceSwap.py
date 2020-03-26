@@ -25,7 +25,7 @@ def extract_index_nparray(nparray):
 
 
 img2 = cv2.imread("/home/aditya/FaceSwap/images/aditya.jpg")
-img = cv2.imread("/home/aditya/FaceSwap/images/yeshu2.jpeg")
+img = cv2.imread("/home/aditya/FaceSwap/images/bradley_cooper.jpg")
 img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 mask = np.zeros_like(img_gray)
@@ -35,9 +35,9 @@ img2_new_face = np.zeros_like(img2)
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor("/home/aditya/FaceSwap/shape_predictor_68_face_landmarks.dat")
 # Face 1
-faces = detector(img_gray)
+faces = detector(img2_gray)
 for face in faces:
-    landmarks = predictor(img_gray, face)
+    landmarks = predictor(img2_gray, face)
     landmarks_points = []
     for n in range(0, 68):
         x = landmarks.part(n).x
@@ -45,7 +45,7 @@ for face in faces:
         landmarks_points.append((x, y))
 
         # cv2.circle(img, (x, y), 3, (0, 0, 255), -1)
-
+    print("landmarks: ", landmarks_points)
     points = np.array(landmarks_points, np.int32)
     convexhull = cv2.convexHull(points)
     # cv2.polylines(img, [convexhull], True, (255, 0, 0), 3)
@@ -78,6 +78,10 @@ for face in faces:
         if index_pt1 is not None and index_pt2 is not None and index_pt3 is not None:
             triangle = [index_pt1, index_pt2, index_pt3]
             indexes_triangles.append(triangle)
+
+    with open('Voronoi_diagram/your_file.txt', 'w') as f:
+        for item in landmarks_points:
+            f.write("%s\n" % item)
 
 # Face 2
 faces2 = detector(img2_gray)

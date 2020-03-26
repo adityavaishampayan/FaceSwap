@@ -17,6 +17,8 @@ steps in the pipeline
     - Blending
     - Motion Filtering
 
+![Dealunay Traingulation](results/delaunay_triangulation.gif)
+
 ## Authors
  - Aditya Vaishampayan
 

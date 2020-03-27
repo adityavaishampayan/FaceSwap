@@ -89,7 +89,11 @@ SOFTWARE.
 
 |![Comparision](results/comparision_readme.png)|
 |:--:|
-| *L to R : Bradley Cooper, Me, My face swapped with Bradley Cooper * |
+| *L to R : Bradley Cooper, Me, My face swapped with Bradley Cooper* |
+
+|![Comparision](results/faceswap_comparision.png)|
+|:--:|
+| *Comparision of Face Swaps* |
 
 ## Dependencies
 Simple starter python project with:

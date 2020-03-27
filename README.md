@@ -17,8 +17,6 @@ steps in the pipeline
     - Blending
     - Motion Filtering
 
-![Dealunay Traingulation](results/delaunay_triangulation.gif)
-
 ## Authors
  - Aditya Vaishampayan
 
@@ -72,6 +70,14 @@ SOFTWARE.
 ├── shape_predictor_68_face_landmarks.dat
 └── Wrapper.py
 ```
+## Results
+|![Dealunay Triangulation](results/delaunay_triangulation.gif)|
+|:--:|
+| *Delaunay Triangulation* |
+
+|![Tsselation](results/tesselation.png) |
+|:--:|
+| *Voronoi tessellation* |
 
 ## Dependencies
 Simple starter python project with:

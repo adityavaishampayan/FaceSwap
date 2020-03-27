@@ -79,6 +79,18 @@ SOFTWARE.
 |:--:|
 | *Voronoi tessellation* |
 
+|![Facial Landmark Detection](results/facial_landmarks_readme.png)|
+|:--:|
+| *Facial Landmark Detection* |
+
+|![Dealunay Triangulation](results/dealaunay_triangulation_readme.png) |
+|:--:|
+| *Voronoi tessellation* |
+
+|![Comarision](results/comparision_readme.png)|
+|:--:|
+| *L to R : Bradley Cooper, Me, My face swapped with Bradley Cooper * |
+
 ## Dependencies
 Simple starter python project with:
 

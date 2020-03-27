@@ -71,11 +71,11 @@ SOFTWARE.
 └── Wrapper.py
 ```
 ## Results
-|![Dealunay Triangulation](results/delaunay_triangulation.gif)|
+|![Delaunay Triangulation](results/delaunay_triangulation.gif)|
 |:--:|
 | *Delaunay Triangulation* |
 
-|![Tsselation](results/tesselation.png) |
+|![Tessellation](results/tesselation.png) |
 |:--:|
 | *Voronoi tessellation* |
 
@@ -83,11 +83,11 @@ SOFTWARE.
 |:--:|
 | *Facial Landmark Detection* |
 
-|![Dealunay Triangulation](results/dealaunay_triangulation_readme.png) |
+|![Delaunay Triangulation](results/dealaunay_triangulation_readme.png) |
 |:--:|
-| *Voronoi tessellation* |
+| *Delaunay Triangulation* |
 
-|![Comarision](results/comparision_readme.png)|
+|![Comparision](results/comparision_readme.png)|
 |:--:|
 | *L to R : Bradley Cooper, Me, My face swapped with Bradley Cooper * |
 

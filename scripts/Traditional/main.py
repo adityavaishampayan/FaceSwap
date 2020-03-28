@@ -155,11 +155,12 @@ if __name__ == '__main__':
     triangles = subdiv.getTriangleList()
     triangles = np.array(triangles, dtype=np.int32)
 
-    indexes_triangles = delaunay_triangulation(convexhull1,face1_points)
+    indexes_triangle1 = delaunay_triangulation(convexhull1,face1_points)
 ########################################################
 
     if method == 'forward_warp':
-        for_warping(indexes_triangles, img1, img2, face1_points, face2_points, lines_space_mask, img2_new_face)
+        for_warping(indexes_triangle1, img1, img2, face1_points, face2_points,
+                                            lines_space_mask, img2_new_face)
 
         img2_face_mask = np.zeros_like(img2_gray)
         img2_head_mask = cv2.fillConvexPoly(img2_face_mask, convexhull2, 255)
@@ -174,7 +175,7 @@ if __name__ == '__main__':
         cv2.imshow("seamlessclone", seamlessclone)
 
     if method == 'inverse_warp':
-        pass
+        inv_warping(indexes_triangles, img1, img2, face1_points, face2_points, lines_space_mask, img2_new_face)
 
     if method == 'thin_plate_spline':
         pass

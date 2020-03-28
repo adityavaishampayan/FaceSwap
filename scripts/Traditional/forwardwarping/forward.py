@@ -23,8 +23,7 @@ SOFTWARE.
 # @file    forward.py
 # @Author  Aditya Vaishampayan (adityavaishampayan)
 # @copyright  MIT
-# @brief main file for traditional method
-
+# @brief file for forward warping method
 import sys
 
 # noinspection PyBroadException
@@ -47,18 +46,16 @@ def for_warping(indexes_triangles, img1, img2, face1_points, face2_points, lines
         # coordinates of triangle 1
         triangle1 = np.array([tr1_pt1, tr1_pt2, tr1_pt3], np.int32)
 
-        print("triangle1", triangle1)
-
         # Obtaining the rectangles
         rect1 = cv2.boundingRect(triangle1)
-        (x, y, w, h) = rect1
-        cropped_triangle = img1[y: y + h, x: x + w]
-        cropped_tr1_mask = np.zeros((h, w), np.uint8)
+        (x1, y1, w1, h1) = rect1
+        cropped_triangle = img1[y1: y1 + h1, x1: x1 + w1]
+        cropped_tr1_mask = np.zeros((h1, w1), np.uint8)
 
         # Offset points by left top corner of the respective rectangles
-        points1 = np.array([[tr1_pt1[0] - x, tr1_pt1[1] - y],
-                            [tr1_pt2[0] - x, tr1_pt2[1] - y],
-                            [tr1_pt3[0] - x, tr1_pt3[1] - y]], np.int32)
+        points1 = np.array([[tr1_pt1[0] - x1, tr1_pt1[1] - y1],
+                            [tr1_pt2[0] - x1, tr1_pt2[1] - y1],
+                            [tr1_pt3[0] - x1, tr1_pt3[1] - y1]], np.int32)
 
         cv2.fillConvexPoly(cropped_tr1_mask, points1, 255)
 
@@ -75,14 +72,14 @@ def for_warping(indexes_triangles, img1, img2, face1_points, face2_points, lines
         triangle2 = np.array([tr2_pt1, tr2_pt2, tr2_pt3], np.int32)
 
         rect2 = cv2.boundingRect(triangle2)
-        (x, y, w, h) = rect2
+        (x2, y2, w2, h2) = rect2
 
-        cropped_tr2_mask = np.zeros((h, w), np.uint8)
+        cropped_tr2_mask = np.zeros((h2, w2), np.uint8)
 
         # Offset points by left top corner of the respective rectangles
-        points2 = np.array([[tr2_pt1[0] - x, tr2_pt1[1] - y],
-                            [tr2_pt2[0] - x, tr2_pt2[1] - y],
-                            [tr2_pt3[0] - x, tr2_pt3[1] - y]], np.int32)
+        points2 = np.array([[tr2_pt1[0] - x2, tr2_pt1[1] - y2],
+                            [tr2_pt2[0] - x2, tr2_pt2[1] - y2],
+                            [tr2_pt3[0] - x2, tr2_pt3[1] - y2]], np.int32)
 
         cv2.fillConvexPoly(cropped_tr2_mask, points2, 255)
 
@@ -90,14 +87,15 @@ def for_warping(indexes_triangles, img1, img2, face1_points, face2_points, lines
         points1 = np.float32(points1)
         points2 = np.float32(points2)
         M = cv2.getAffineTransform(points1, points2)
-        warped_triangle = cv2.warpAffine(cropped_triangle, M, (w, h))
+        warped_triangle = cv2.warpAffine(cropped_triangle, M, (w2, h2))
         warped_triangle = cv2.bitwise_and(warped_triangle, warped_triangle, mask=cropped_tr2_mask)
 
         # Reconstructing destination face
-        img2_new_face_rect_area = img2_new_face[y: y + h, x: x + w]
+        img2_new_face_rect_area = img2_new_face[y2: y2 + h2, x2: x2 + w2]
         img2_new_face_rect_area_gray = cv2.cvtColor(img2_new_face_rect_area, cv2.COLOR_BGR2GRAY)
         _, mask_triangles_designed = cv2.threshold(img2_new_face_rect_area_gray, 1, 255, cv2.THRESH_BINARY_INV)
         warped_triangle = cv2.bitwise_and(warped_triangle, warped_triangle, mask=mask_triangles_designed)
 
         img2_new_face_rect_area = cv2.add(img2_new_face_rect_area, warped_triangle)
-        img2_new_face[y: y + h, x: x + w] = img2_new_face_rect_area
+
+        img2_new_face[y2: y2 + h2, x2: x2 + w2] = img2_new_face_rect_area

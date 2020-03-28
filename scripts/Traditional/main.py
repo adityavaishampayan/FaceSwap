@@ -25,7 +25,7 @@ SOFTWARE.
 # @copyright  MIT
 # @brief main file for traditional methods of face swapping
 
-method = 'forward_warp'
+method = 'thin_plate_spline'
 
 
 import sys
@@ -41,8 +41,8 @@ import numpy as np
 import dlib
 
 from scripts.Traditional.forwardwarping.forward import for_warping
-#from ForwardWarping.forward import for_warping
-#from InverseWarping.inverse import *
+from scripts.Traditional.InverseWarping.inverse import inv_warping
+from scripts.Traditional.ThinPlateSplines.ThinPlateSpline import thinPlateSpline
 
 def facial_landmark_detection(gray_img):
     """
@@ -175,10 +175,25 @@ if __name__ == '__main__':
         cv2.imshow("seamlessclone", seamlessclone)
 
     if method == 'inverse_warp':
-        inv_warping(indexes_triangles, img1, img2, face1_points, face2_points, lines_space_mask, img2_new_face)
+        inv_warping(indexes_triangle1, img1, img2, face1_points, face2_points, lines_space_mask, img2_new_face)
+
+        img2_face_mask = np.zeros_like(img2_gray)
+        img2_head_mask = cv2.fillConvexPoly(img2_face_mask, convexhull2, 255)
+        img2_face_mask = cv2.bitwise_not(img2_head_mask)
+
+        img2_head_noface = cv2.bitwise_and(img2, img2, mask=img2_face_mask)
+        result = cv2.add(img2_head_noface, img2_new_face)
+        (x, y, w, h) = cv2.boundingRect(convexhull2)
+        center_face2 = (int((x + x + w) / 2), int((y + y + h) / 2))
+
+        seamlessclone = cv2.seamlessClone(result, img2, img2_head_mask, center_face2, cv2.NORMAL_CLONE)
+        cv2.imshow("seamlessclone", seamlessclone)
 
     if method == 'thin_plate_spline':
-        pass
+        img1Warped = np.copy(img2)
+        print("convex hull2", convexhull2)
+        result = thinPlateSpline(img1,img1Warped,face1_points,face2_points,convexhull2)
+        cv2.imshow("result", result)
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()

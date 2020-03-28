@@ -36,6 +36,87 @@ except BaseException:
 
 import cv2
 import numpy as np
+from scipy.interpolate import interp2d
+
+def triangulationWarping(src, srcTri, dstTri, size, epsilon=0.1):
+    t = dstTri
+    s = srcTri
+
+    #(x1, y1, w1, h1)
+    x1, y1, w1, h1 = cv2.boundingRect(np.float32([t]))
+
+    xleft = x1
+    xright = x1 + w1
+    ytop = y1
+    ybottom = y1 + h1
+
+    dst_matrix = np.linalg.inv([[t[0][0], t[1][0], t[2][0]],
+                                [t[0][1], t[1][1], t[2][1]],
+                                [1, 1, 1]])
+
+    grid = np.mgrid[xleft:xright, ytop:ybottom].reshape(2, -1)
+
+
+    # grid 2xN
+    grid = np.vstack((grid, np.ones((1, grid.shape[1]))))
+
+    print(grid.shape)
+
+    # grid 3xN
+    barycoords = np.dot(dst_matrix, grid)
+
+
+    t = []
+    b = np.all(barycoords > -epsilon, axis=0)
+    a = np.all(barycoords < 1 + epsilon, axis=0)
+    for i in range(len(a)):
+        t.append(a[i] and b[i])
+    dst_y = []
+    dst_x = []
+    for i in range(len(t)):
+        if (t[i]):
+            dst_y.append(i % h1)
+            dst_x.append(i / h1)
+
+    barycoords = barycoords[:, np.all(-epsilon < barycoords, axis=0)]
+    barycoords = barycoords[:, np.all(barycoords < 1 + epsilon, axis=0)]
+
+    src_matrix = np.matrix([[s[0][0], s[1][0], s[2][0]], [s[0][1], s[1][1], s[2][1]], [1, 1, 1]])
+    pts = np.matmul(src_matrix, barycoords)
+
+    xA = pts[0, :] / pts[2, :]
+    yA = pts[1, :] / pts[2, :]
+
+    dst = np.zeros((size[1], size[0], 3), np.uint8)
+    print("dst: ", dst.shape)
+
+    i = 0
+    for x, y in zip(xA.flat, yA.flat):
+        xs = np.linspace(0, src.shape[1], num=src.shape[1], endpoint=False)
+        ys = np.linspace(0, src.shape[0], num=src.shape[0], endpoint=False)
+
+        b = src[:, :, 0]
+        fb = interp2d(xs, ys, b, kind='cubic')
+
+        g = src[:, :, 1]
+        fg = interp2d(xs, ys, g, kind='cubic')
+
+        r = src[:, :, 2]
+        fr = interp2d(xs, ys, r, kind='cubic')
+
+        blue = fb(x, y)[0]
+        green = fg(x, y)[0]
+        red = fr(x, y)[0]
+
+        print("blue: ",blue)
+        print("green: ", green)
+        print("red: ", red)
+
+        dst[dst_y[i], dst_x[i]] = (blue, green, red)
+        i = i + 1
+
+    return dst
+
 
 
 def inv_warping(indexes_triangles, img1, img2, face1_points, face2_points, lines_space_mask, img2_new_face):
@@ -85,11 +166,19 @@ def inv_warping(indexes_triangles, img1, img2, face1_points, face2_points, lines
 
         cv2.fillConvexPoly(cropped_tr2_mask, points2, 255)
 
-        # Warp triangles
-        points1 = np.float32(points1)
-        points2 = np.float32(points2)
-        M = cv2.getAffineTransform(points1, points2)
-        warped_triangle = cv2.warpAffine(cropped_triangle, M, (w2, h2))
+        # t1rect = points1
+        # t2rect = points2
+        # size = (w2, h2)
+        # img1Rect = cropped_triangle
+
+
+        warped_triangle = triangulationWarping(cropped_triangle, points1, points2, (w2, h2))
+
+        # # Warp triangles
+        # points1 = np.float32(points1)
+        # points2 = np.float32(points2)
+        # M = cv2.getAffineTransform(points1, points2)
+        # warped_triangle = cv2.warpAffine(cropped_triangle, M, (w2, h2))
         warped_triangle = cv2.bitwise_and(warped_triangle, warped_triangle, mask=cropped_tr2_mask)
 
         # Reconstructing destination face

@@ -12,10 +12,10 @@ def extract_index_nparray(nparray):
     return index
 
 
-img = cv2.imread("../images/bradley_cooper.jpg")
+img = cv2.imread("../images/aditya.jpg")
 img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 mask = np.zeros_like(img_gray)
-img2 = cv2.imread("../images/aditya.jpg")
+img2 = cv2.imread("../images/bradley_cooper.jpg")
 img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
 
@@ -38,40 +38,40 @@ for face in faces:
         landmarks_points.append((x, y))
 
 
-
     points = np.array(landmarks_points, np.int32)
+    print(points)
     convexhull = cv2.convexHull(points)
     # cv2.polylines(img, [convexhull], True, (255, 0, 0), 3)
     cv2.fillConvexPoly(mask, convexhull, 255)
 
     face_image_1 = cv2.bitwise_and(img, img, mask=mask)
 
-    # Delaunay triangulation
-    rect = cv2.boundingRect(convexhull)
-    subdiv = cv2.Subdiv2D(rect)
-    subdiv.insert(landmarks_points)
-    triangles = subdiv.getTriangleList()
-    triangles = np.array(triangles, dtype=np.int32)
+# Delaunay triangulation
+rect = cv2.boundingRect(convexhull)
+subdiv = cv2.Subdiv2D(rect)
+subdiv.insert(landmarks_points)
+triangles = subdiv.getTriangleList()
+triangles = np.array(triangles, dtype=np.int32)
 
-    indexes_triangles = []
-    for t in triangles:
-        pt1 = (t[0], t[1])
-        pt2 = (t[2], t[3])
-        pt3 = (t[4], t[5])
+indexes_triangles = []
+for t in triangles:
+    pt1 = (t[0], t[1])
+    pt2 = (t[2], t[3])
+    pt3 = (t[4], t[5])
 
 
-        index_pt1 = np.where((points == pt1).all(axis=1))
-        index_pt1 = extract_index_nparray(index_pt1)
+    index_pt1 = np.where((points == pt1).all(axis=1))
+    index_pt1 = extract_index_nparray(index_pt1)
 
-        index_pt2 = np.where((points == pt2).all(axis=1))
-        index_pt2 = extract_index_nparray(index_pt2)
+    index_pt2 = np.where((points == pt2).all(axis=1))
+    index_pt2 = extract_index_nparray(index_pt2)
 
-        index_pt3 = np.where((points == pt3).all(axis=1))
-        index_pt3 = extract_index_nparray(index_pt3)
+    index_pt3 = np.where((points == pt3).all(axis=1))
+    index_pt3 = extract_index_nparray(index_pt3)
 
-        if index_pt1 is not None and index_pt2 is not None and index_pt3 is not None:
-            triangle = [index_pt1, index_pt2, index_pt3]
-            indexes_triangles.append(triangle)
+    if index_pt1 is not None and index_pt2 is not None and index_pt3 is not None:
+        triangle = [index_pt1, index_pt2, index_pt3]
+        indexes_triangles.append(triangle)
 
 
 
@@ -123,7 +123,6 @@ for triangle_index in indexes_triangles:
     tr2_pt2 = landmarks_points2[triangle_index[1]]
     tr2_pt3 = landmarks_points2[triangle_index[2]]
     triangle2 = np.array([tr2_pt1, tr2_pt2, tr2_pt3], np.int32)
-
 
     rect2 = cv2.boundingRect(triangle2)
     (x, y, w, h) = rect2

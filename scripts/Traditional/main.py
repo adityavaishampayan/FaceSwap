@@ -39,10 +39,12 @@ except BaseException:
 import cv2
 import numpy as np
 import dlib
+import copy
+from imutils import face_utils
 
 from scripts.Traditional.forwardwarping.forward import for_warping
 from scripts.Traditional.InverseWarping.inverse import inv_warping
-from scripts.Traditional.ThinPlateSplines.ThinPlateSpline import thinPlateSpline
+from scripts.Traditional.ThinPlateSplines.ThinPlateSpline import *
 
 def facial_landmark_detection(gray_img):
     """
@@ -109,17 +111,46 @@ def delaunay_triangulation(convex_hull, landmarks_points):
     return idx_triangles
 
 
+def features(img,detector,predictor,resize_val):
+    #initialize facial detector
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # gray = cv2.resize(gray,(resize_val,resize_val))
+    # img = cv2.resize(img,(resize_val,resize_val))
+    rects = detector(gray,1)
+    if np.shape(rects)[0] == 0:
+        shape = 0
+        feature_found = False
+    else:
+        feature_found = True
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        for (i,rect) in enumerate(rects):
+            # print('before shape')
+            shape = predictor(gray,rect)
+            shape = face_utils.shape_to_np(shape)
+            # print('shape = ')
+            # print(shape)
+
+            (x,y,w,h) = face_utils.rect_to_bb(rect)
+            cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+
+
+            for (x,y) in shape:
+                cv2.circle(img,(x,y),2,(0,0,255),-1)
+    # plt.imshow(img)
+    # plt.show()
+    return img, shape, feature_found
+
 if __name__ == '__main__':
 ########################################################
     # Reading Image 1
-    img1 = cv2.imread("/home/aditya/FaceSwap/images/aditya.jpg")
+    img1 = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/images/aditya.jpg")
     # converting image 1 to grayscale
     img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     # making a mask of image 1
     mask = np.zeros_like(img1_gray)
 ########################################################
     # reading the image 2
-    img2 = cv2.imread("/home/aditya/FaceSwap/images/bradley_cooper.jpg")
+    img2 = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/images/bradley_cooper.jpg")
     # converting image 2 to gray scale
     img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
     height, width, channels = img2.shape
@@ -190,10 +221,56 @@ if __name__ == '__main__':
         cv2.imshow("seamlessclone", seamlessclone)
 
     if method == 'thin_plate_spline':
-        img1Warped = np.copy(img2)
-        print("convex hull2", convexhull2)
-        result = thinPlateSpline(img1,img1Warped,face1_points,face2_points,convexhull2)
-        cv2.imshow("result", result)
+        img_tar = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/images/bradley_cooper.jpg")
+        # converting image 1 to grayscale
+        # img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+
+        img_src = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/dataset/Scarlett.jpg")
+        # converting image 2 to gray scale
+        # img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+
+        # Initialising the facial landmark detector
+        detector = dlib.get_frontal_face_detector()
+        predictor = dlib.shape_predictor("/home/aditya/Desktop/to_add/FaceSwap/shape_predictor_68_face_landmarks.dat")
+
+        rects = detector(img_src, 1)
+        img_source = copy.deepcopy(img_src)
+        img_target = img_tar.copy()
+
+        # print(len(rects))
+        if len(rects) == 1:
+            img_source = img_source[rects[0].top() - 40:rects[0].bottom() + 40,
+                         rects[0].left() - 40:rects[0].right() + 40, :]
+
+        elif len(rects) > 1:
+            img_target = img_source[rects[1].top() - 40:rects[1].bottom() + 40,
+                         rects[1].left() - 40:rects[1].right() + 40, :]
+            img_source = img_source[rects[0].top() - 40:rects[0].bottom() + 40,
+                         rects[0].left() - 40:rects[0].right() + 40, :]
+        else:
+            cv2.imwrite('./result1/' + str(i) + '.jpg', img_src)
+            print("2 faces not detected")
+
+        img1 = img_source.copy()
+        img2 = img_target.copy()
+
+        a = 200
+
+        img1, points1, flag1 = features(img_source, detector, predictor, a)
+        img2, points2, flag2 = features(img_target, detector, predictor, a)
+
+        print(img_source.shape)
+        output1 = swap(img_source.copy(), img_target.copy(), points1, points2)
+        output1 = cv2.resize(output1, (
+        (rects[0].right() + 40) - (rects[0].left() - 40), (rects[0].bottom() + 40) - (rects[0].top() - 40)))
+        img_src[rects[0].top() - 40:rects[0].bottom() + 40, rects[0].left() - 40:rects[0].right() + 40, :] = output1
+        if len(rects) > 1:
+            output2 = swap(img_target.copy(), img_source.copy(), points2, points1)
+            output2 = cv2.resize(output2, (
+            (rects[1].right() + 40) - (rects[1].left() - 40), (rects[1].bottom() + 40) - (rects[1].top() - 40)))
+            img_src[rects[1].top() - 40:rects[1].bottom() + 40, rects[1].left() - 40:rects[1].right() + 40, :] = output2
+
+        cv2.imshow("img src", img_src)
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()

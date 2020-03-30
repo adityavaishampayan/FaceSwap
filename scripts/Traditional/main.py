@@ -142,15 +142,19 @@ def features(img,detector,predictor,resize_val):
 
 if __name__ == '__main__':
 ########################################################
+
+    #img_tar = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/TestSet/Rambo.jpg")
+    #img_src = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/TestSet/Test1/frame16.jpg")
+
     # Reading Image 1
-    img1 = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/images/aditya.jpg")
+    img1 = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/images/bradley_cooper.jpg")
     # converting image 1 to grayscale
     img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     # making a mask of image 1
     mask = np.zeros_like(img1_gray)
 ########################################################
     # reading the image 2
-    img2 = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/images/bradley_cooper.jpg")
+    img2 = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/images/aditya.jpg")
     # converting image 2 to gray scale
     img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
     height, width, channels = img2.shape
@@ -217,12 +221,13 @@ if __name__ == '__main__':
         (x, y, w, h) = cv2.boundingRect(convexhull2)
         center_face2 = (int((x + x + w) / 2), int((y + y + h) / 2))
 
-        seamlessclone = cv2.seamlessClone(result, img2, img2_head_mask, center_face2, cv2.NORMAL_CLONE)
+        seamlessclone = cv2.seamlessClone(result, img2, img2_head_mask, center_face2, cv2.MIXED_CLONE)
         cv2.imshow("seamlessclone", seamlessclone)
 
     if method == 'thin_plate_spline':
-        img_tar = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/images/aditya.jpg")
-        img_src = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/images/bradley_cooper.jpg")
+
+        img_tar = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/TestSet/Scarlett.jpg")
+        img_src = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/TestSet/Test3/frame20.jpg")
 
         detector = dlib.get_frontal_face_detector()
         predictor = dlib.shape_predictor("/home/aditya/Desktop/to_add/FaceSwap/shape_predictor_68_face_landmarks.dat")
@@ -241,8 +246,9 @@ if __name__ == '__main__':
             img_source = img_source[rects[0].top() - 40:rects[0].bottom() + 40,
                          rects[0].left() - 40:rects[0].right() + 40, :]
         else:
-            cv2.imwrite('./result1/' + str(i) + '.jpg', img_src)
-            print("2 faces not detected")
+            # cv2.imwrite('./result1/' + str(i) + '.jpg', img_src)
+            # print("2 faces not detected")
+            pass
 
         img1 = img_source.copy()
         img2 = img_target.copy()
@@ -251,6 +257,8 @@ if __name__ == '__main__':
 
         img1, points1, flag1 = features(img_source, detector, predictor, a)
         img2, points2, flag2 = features(img_target, detector, predictor, a)
+
+        print(points1)
 
         output1 = swap(img_source.copy(), img_target.copy(), points1, points2)
         output1 = cv2.resize(output1, (

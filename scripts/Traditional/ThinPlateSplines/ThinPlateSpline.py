@@ -93,17 +93,17 @@ def TPS_generate(source, target):
 def swap(img_source,img_target,points1,points2):
     weights_x,K = TPS_generate(points1,points2[:,0])
     weights_y,K = TPS_generate(points1,points2[:,1])
-    plt.imshow(K)
+    #plt.imshow(K)
 
     w, h = img_target.shape[:2]
     # ## Mask for blending
     mask = mask_from_points((w, h), points2)
-    plt.imshow(mask)
+    #plt.imshow(mask)
     # mask.shape
 
     warped_img, mask_warped_img = warp_tps(img_source,img_target,points1,points2,weights_x,weights_y,mask)
-    plt.imshow(warped_img)
-    plt.imshow(mask_warped_img)
+    #plt.imshow(warped_img)
+    #plt.imshow(mask_warped_img)
     # mask_warped_img.shape
 
 
@@ -111,4 +111,8 @@ def swap(img_source,img_target,points1,points2):
     r = cv2.boundingRect(mask_warped_img)
     center = ((r[0] + int(r[2] / 2), r[1] + int(r[3] / 2)))
     output = cv2.seamlessClone(warped_img.copy(), img_source, mask_warped_img, center, cv2.NORMAL_CLONE)
+
+    #cv2.imshow("output", output)
+    #cv2.waitKey(0)
+
     return output

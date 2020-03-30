@@ -221,15 +221,9 @@ if __name__ == '__main__':
         cv2.imshow("seamlessclone", seamlessclone)
 
     if method == 'thin_plate_spline':
-        img_src = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/images/aditya.jpg")
-        # converting image 1 to grayscale
-        # img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+        img_tar = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/images/aditya.jpg")
+        img_src = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/images/bradley_cooper.jpg")
 
-        img_tar = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/dataset/Scarlett.jpg")
-        # converting image 2 to gray scale
-        # img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-
-        # Initialising the facial landmark detector
         detector = dlib.get_frontal_face_detector()
         predictor = dlib.shape_predictor("/home/aditya/Desktop/to_add/FaceSwap/shape_predictor_68_face_landmarks.dat")
 
@@ -237,7 +231,6 @@ if __name__ == '__main__':
         img_source = copy.deepcopy(img_src)
         img_target = img_tar.copy()
 
-        # print(len(rects))
         if len(rects) == 1:
             img_source = img_source[rects[0].top() - 40:rects[0].bottom() + 40,
                          rects[0].left() - 40:rects[0].right() + 40, :]
@@ -259,7 +252,6 @@ if __name__ == '__main__':
         img1, points1, flag1 = features(img_source, detector, predictor, a)
         img2, points2, flag2 = features(img_target, detector, predictor, a)
 
-        print(img_source.shape)
         output1 = swap(img_source.copy(), img_target.copy(), points1, points2)
         output1 = cv2.resize(output1, (
         (rects[0].right() + 40) - (rects[0].left() - 40), (rects[0].bottom() + 40) - (rects[0].top() - 40)))

@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import sys
 import math
+import matplotlib.pyplot as plt
 
 def fxy(pt1,pts2,weights):
     K = np.zeros([pts2.shape[0],1])
@@ -70,7 +71,7 @@ def mask_from_points(size, points,erode_flag=1):
 def U(r):
     return (r**2)*(math.log(r**2))
 
-def TPS_generate(source,target):
+def TPS_generate(source, target):
     P = np.append(source,np.ones([source.shape[0],1]),axis=1)
     P_Trans = P.T
     Z = np.zeros([3,3])
@@ -88,20 +89,21 @@ def TPS_generate(source,target):
     weights = np.matmul(L_inv,V)
     return weights,K
 
+
 def swap(img_source,img_target,points1,points2):
     weights_x,K = TPS_generate(points1,points2[:,0])
     weights_y,K = TPS_generate(points1,points2[:,1])
-    # plt.imshow(K)
+    plt.imshow(K)
 
     w, h = img_target.shape[:2]
     # ## Mask for blending
     mask = mask_from_points((w, h), points2)
-    # plt.imshow(mask)
+    plt.imshow(mask)
     # mask.shape
 
     warped_img, mask_warped_img = warp_tps(img_source,img_target,points1,points2,weights_x,weights_y,mask)
-    # plt.imshow(warped_img)
-    # plt.imshow(mask_warped_img)
+    plt.imshow(warped_img)
+    plt.imshow(mask_warped_img)
     # mask_warped_img.shape
 
 

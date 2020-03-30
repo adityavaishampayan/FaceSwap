@@ -42,12 +42,16 @@ def warp_tps(img_source,img_target,points1,points2,weights_x,weights_y,mask):
 #     print(img_source.shape)
     warped_img = img_source.copy()
     mask_warped_img = np.zeros_like(warped_img[:,:,0])
-    for a in range(u.shape[0]):
+    for a in range(1, u.shape[0]):
+        try:
     #     for b in range(v.shape[0]):
     #     warped_img[xy[a,1],xy[a,0],:] = warped_src_face[v[a],u[a],:]
-        if mask[v[a],u[a]]>0:
-            warped_img[xy[a,1],xy[a,0],:] = img_target[v[a],u[a],:]
-            mask_warped_img[xy[a,1],xy[a,0]] = 255
+
+            if mask[v[a],u[a]]>0:
+                warped_img[xy[a,1],xy[a,0],:] = img_target[v[a],u[a],:]
+                mask_warped_img[xy[a,1],xy[a,0]] = 255
+        except:
+            pass
     # plt.imshow(warped_img)
     # plt.show()
     return warped_img, mask_warped_img

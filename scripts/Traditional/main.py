@@ -221,11 +221,11 @@ if __name__ == '__main__':
         cv2.imshow("seamlessclone", seamlessclone)
 
     if method == 'thin_plate_spline':
-        img_tar = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/images/bradley_cooper.jpg")
+        img_src = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/images/aditya.jpg")
         # converting image 1 to grayscale
         # img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
 
-        img_src = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/dataset/Scarlett.jpg")
+        img_tar = cv2.imread("/home/aditya/Desktop/to_add/FaceSwap/dataset/Scarlett.jpg")
         # converting image 2 to gray scale
         # img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 

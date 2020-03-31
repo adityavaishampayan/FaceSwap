@@ -30,7 +30,7 @@ from scipy.interpolate import interp2d
 import cv2
 
 
-def triangulationWarping(src, srcTri, dstTri, size, epsilon=0.1):
+def triangulation_warping(src, srcTri, dstTri, size, epsilon=0.1):
     """
     this function performs inverse warping using barycentric coordinates
     Args:
@@ -89,8 +89,9 @@ def triangulationWarping(src, srcTri, dstTri, size, epsilon=0.1):
     pts = np.matmul(src_matrix, barycentric_coords)
 
     # converting values to homogenous coordinates
-    xA = pts[0, :] / pts[2, :]
-    yA = pts[1, :] / pts[2, :]
+    h = pts[2, :]
+    xA = pts[0, :] / h
+    yA = pts[1, :] / h
 
     dst = np.zeros((size[1], size[0], 3), np.uint8)
 
@@ -113,7 +114,11 @@ def triangulationWarping(src, srcTri, dstTri, size, epsilon=0.1):
         fr = interp2d(x_values, y_values, r, kind='cubic')
         red = fr(x, y)[0]
 
-        dst[dst_y[i], dst_x[i]] = (blue, green, red)
+        try:
+            dst[dst_y[i], dst_x[i]] = (blue, green, red)
+        except:
+            pass
+
         i = i + 1
 
     return dst

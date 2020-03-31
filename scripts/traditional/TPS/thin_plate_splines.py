@@ -29,40 +29,10 @@ import numpy as np
 import cv2
 import math
 from scripts.traditional.TPS.estimating_params import param_estimation
+from scripts.traditional.TPS.U_r import U
 
-# def U(r):
-#     u = (r**2)*np.log(r**2)
-#     if(math.isnan(u)):
-#         u = 0
-#     return u
-#
-# def param_estimation(points2,points1_d):
-#
-#     p = len(points2)
-#
-#     K = np.zeros((p,p), np.float32)
-#     P = np.zeros((p,3), np.float32)
-#
-#     for i in xrange(p):
-#         for j in xrange(p):
-#             a = points2[i,:]
-#             b = points2[j,:]
-#             K[i,j] = U(np.linalg.norm((a-b)))
-#
-#     P = np.hstack((points2,np.ones((p,1))))
-#
-#     A = np.hstack((P.transpose(),np.zeros((3,3))))
-#     B = np.hstack((K,P))
-#     C = np.vstack((B,A))
-#     lamda = 0.0000001
-#
-#     T = np.linalg.inv(C + lamda*np.identity(p+3))
-#     target = np.concatenate((points1_d,[0,0,0]))
-#     params = np.matmul(T,target)
-#
-#     return params
 
-def thinPlateSpline(image_1, image_2, facial_landmark_pts1, facial_landmark_pts2, convex_hull2):
+def thin_plate_spline(image_1, image_2, facial_landmark_pts1, facial_landmark_pts2, convex_hull2):
     """
     a function for swapping two faces by performing thin plate splines
     Args:
@@ -84,13 +54,13 @@ def thinPlateSpline(image_1, image_2, facial_landmark_pts1, facial_landmark_pts2
     # converting facial landmarks from face 2 to a numpy array
     facial_landmark_pts2 = np.asarray(facial_landmark_pts2)
 
-    # obtaining a boinding rectangle
+    # obtaining a bounding rectangle
     rect = cv2.boundingRect(np.float32([facial_landmark_pts2]))
 
     # the x, y and height and the width
     rect_x, rect_y, rect_w, rect_h = rect
 
-    # obtaining a mask of sixe of the height and width of the rectangle
+    # obtaining a mask of size of the height and width of the rectangle
     mask = np.zeros((rect_h, rect_w, 3), dtype = np.float32)
 
     points2_t = []
@@ -99,7 +69,7 @@ def thinPlateSpline(image_1, image_2, facial_landmark_pts1, facial_landmark_pts2
     for i in range(convex_hull_length):
         points2_t.append(((convex_hull2[i][0] - rect_x), (convex_hull2[i][1] - rect_y)))
 
-    cv2.fillConvexPoly(mask, np.int32(points2_t), (1.0, 1.0, 1.0), 16, 0);
+    cv2.fillConvexPoly(mask, np.int32(points2_t), (1.0, 1.0, 1.0), 16, 0)
     
     parameters_y = param_estimation(facial_landmark_pts2, facial_landmark_pts1[:, 1])
     parameters_x = param_estimation(facial_landmark_pts2, facial_landmark_pts1[:, 0])
@@ -120,31 +90,32 @@ def thinPlateSpline(image_1, image_2, facial_landmark_pts1, facial_landmark_pts2
 
     for i in range(warp_img_height):
         for j in range(warp_img_width):
-            t = 0
             l = 0
-            n = i+ rect_x
-            m = j+ rect_y
-            b = [n,m]
+            t = 0
+            m = j + rect_y
+            n = i + rect_x
+
+            b = [n, m]
+
             for k in range(p):
                 a = facial_landmark_pts2[k, :]
-                t = t+parameters_x[k]*U(np.linalg.norm((a-b)))
-                l = l+parameters_y[k]*U(np.linalg.norm((a-b)))
+                norm_ab = U(np.linalg.norm((a-b)))
+                t = t + parameters_x[k] * norm_ab
+                l = l + parameters_y[k] * norm_ab
 
-            y = a1_y + ax_y*n + ay_y*m + l
-            x = a1_x + ax_x*n + ay_x*m + t
-
-            # rounding off and converting to an integer
-            x = int(x)
-            y = int(y)
+            y = int(a1_y + ax_y*n + ay_y*m + l)
+            x = int(a1_x + ax_x*n + ay_x*m + t)
 
             x = min(max(x, 0), image_1.shape[1] - 1)
             y = min(max(y, 0), image_1.shape[0] - 1)
 
-            warped_img[j,i] = image_1[y, x, :]
+            warped_img[j, i] = image_1[y, x, :]
 
     warped_img = warped_img * mask
 
-    image_2[rect_y:rect_y + rect_h, rect_x:rect_x + rect_w] = image_2[rect_y:rect_y + rect_h, rect_x:rect_x + rect_w] * ((1.0, 1.0, 1.0) - mask)
-    image_2[rect_y:rect_y + rect_h, rect_x:rect_x + rect_w] = image_2[rect_y:rect_y + rect_h, rect_x:rect_x + rect_w] + warped_img
+    image_2[rect_y:rect_y + rect_h, rect_x:rect_x + rect_w] = image_2[rect_y:rect_y + rect_h, rect_x:rect_x + rect_w] * \
+                                                              ((1.0, 1.0, 1.0) - mask)
+    image_2[rect_y:rect_y + rect_h, rect_x:rect_x + rect_w] = image_2[rect_y:rect_y + rect_h, rect_x:rect_x + rect_w] + \
+                                                              warped_img
 
     return image_2

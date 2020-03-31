@@ -62,15 +62,18 @@ def delaunay_triangle_calculation(rect, points):
         pt3 = (t[4], t[5])
 
         if in_rectangle(rect, pt1) and in_rectangle(rect, pt2) and in_rectangle(rect, pt3):
-            ind = []
-            # Get face-points (from 68 face detector) by coordinates
+            index = []
+
+            # get 68 face points by coordinates
             for j in range(0, 3):
                 for k in range(0, len(points)):
-                    if abs(pt[j][0] - points[k][0]) < 1.0 and abs(pt[j][1] - points[k][1]) < 1.0:
-                        ind.append(k)
+                    alpha = abs(pt[j][0] - points[k][0])
+                    beta = abs(pt[j][1] - points[k][1])
+                    if alpha < 1.0 and beta < 1.0:
+                        index.append(k)
 
-            if len(ind) == 3:
-                delaunay_tri.append((ind[0], ind[1], ind[2]))
+            if len(index) == 3:
+                delaunay_tri.append((index[0], index[1], index[2]))
 
         pt = []
 

@@ -23,14 +23,14 @@ SOFTWARE.
 # @file    main.py
 # @Author  Aditya Vaishampayan (adityavaishampayan)
 # @copyright  MIT
-# @brief fa wrapper file for calling traditional cv methods
+# @brief a wrapper file for calling traditional cv methods
 
-from scripts.traditional.TPS.thin_plate_splines import thinPlateSpline
+from scripts.traditional.TPS.thin_plate_splines import thin_plate_spline
 from scripts.traditional.Warping.triangulation import triangulation
-from scripts.traditional.facial_landmarks import *
 
 import numpy as np
 import cv2
+
 
 def conventional_method(img1, img2, points1, points2, method):
     """
@@ -45,37 +45,36 @@ def conventional_method(img1, img2, points1, points2, method):
     Returns: face swapped output
 
     """
-    img1Warped = np.copy(img2)
 
-    hull1 = []
-    hull2 = []
+    warped_image1 = np.copy(img2)
 
-    hullIndex = cv2.convexHull(np.array(points2), returnPoints = False)
+    convex_hull2 = []
+    convex_hull1 = []
+    cloning_hull = []
 
-    for i in range(0, len(hullIndex)):
-        hull2.append(points2[int(hullIndex[i])])
-        hull1.append(points1[int(hullIndex[i])])
+    convexhull_index = cv2.convexHull(np.array(points2), returnPoints = False)
 
-    if(method=="tps"):
+    for i in range(0, len(convexhull_index)):
+        convex_hull2.append(points2[int(convexhull_index[i])])
+        convex_hull1.append(points1[int(convexhull_index[i])])
 
-        img1Warped = thinPlateSpline(img1,img1Warped,points1,points2,hull2)
+    # we perform affine transformation if method == affine or if method = inv_warp we perform inverse warping
+    if method == "affine" or method == "inv_warp":
+        warped_image1 = triangulation(img1, img2, warped_image1, convex_hull1, convex_hull2, method)
 
-    elif(method=="affine" or method=="tri"):
+    # we perform thin plate spline method is mode == tps
+    elif method == "tps":
+        warped_image1 = thin_plate_spline(img1, warped_image1, points1, points2, convex_hull2)
 
-        img1Warped = triangulation(img1,img2,img1Warped,hull1,hull2,method)
-
-    hull8U = []
-    for i in range(0, len(hull2)):
-        hull8U.append((hull2[i][0], hull2[i][1]))
+    for i in range(0, len(convex_hull2)):
+        cloning_hull.append((convex_hull2[i][0], convex_hull2[i][1]))
 
     mask = np.zeros(img2.shape, dtype=img2.dtype)
-    cv2.fillConvexPoly(mask, np.int32(hull8U), (255, 255, 255))
-    r = cv2.boundingRect(np.float32([hull2]))
-    center = ((r[0] + int(r[2] / 2), r[1] + int(r[3] / 2)))
+    cv2.fillConvexPoly(mask, np.int32(cloning_hull), (255, 255, 255))
+    (x, y, w, h) = cv2.boundingRect(np.float32([convex_hull2]))
+    center = (x + int(x / 2), y + int(y / 2))
 
-    # Clone seamlessly.
-    output = cv2.seamlessClone(np.uint8(img1Warped), img2, mask, center, cv2.NORMAL_CLONE)
+    # to perform a seamless cloning operation
+    seamless_clone = cv2.seamlessClone(np.uint8(warped_image1), img2, mask, center, cv2.NORMAL_CLONE)
 
-    return output
-
-
+    return seamless_clone

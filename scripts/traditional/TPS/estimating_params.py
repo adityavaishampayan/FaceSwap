@@ -25,7 +25,6 @@ SOFTWARE.
 # @copyright  MIT
 # @brief file for estimating the parameters of TPS for face warping
 
-
 import numpy as np
 from scripts.traditional.TPS.U_r import U
 
@@ -51,8 +50,9 @@ def param_estimation(face_points2, face_points1_1d):
 
             K[i, j] = U(np.linalg.norm((a - b)))
 
+    zero_matrix_3 = np.zeros((3, 3))
     # obtaining the lower half of matrix by combining P.T and zeros
-    alpha = np.hstack((P.transpose(), np.zeros((3, 3))))
+    alpha = np.hstack((P.T, zero_matrix_3))
 
     # obtaining the upper half of matrix by concatenating K matrix and P matrix
     beta = np.hstack((K, P))
@@ -66,8 +66,9 @@ def param_estimation(face_points2, face_points1_1d):
     # calculating the inverse
     matrix_inv = np.linalg.inv(gamma + lamda * np.identity(p + 3))
 
+    zero_matrix_1d = [0, 0, 0]
     # target points for the TPS
-    v = np.concatenate((face_points1_1d, [0, 0, 0]))
+    v = np.concatenate((face_points1_1d, zero_matrix_1d))
 
     # obtaining the thin plate spline parameters after matrix multiplication
     tps_params = np.matmul(matrix_inv, v)
